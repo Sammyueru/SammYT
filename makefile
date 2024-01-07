@@ -4,25 +4,28 @@ CC := gcc
 CXX := g++
 
 PROJECT ?= float_compress
-OS		?= WIN # WIN, LINUX, MACOS, UNIX, NONE
-STATE 	?= RELEASE # RELEASE, DEBUG
-ARCH 	?= x64 # x86, x64, ARM, ARM64
-TYPE 	?= SOFTWARE # SOFTWARE, OS
+# WIN, LINUX, MACOS, UNIX, NONE
+OS		?= WIN
+ # RELEASE, DEBUG
+STATE 	?= RELEASE
+# x86, x64, ARM, ARM64
+ARCH 	?= x64
+# SOFTWARE, OS
+TYPE 	?= SOFTWARE
 
 SRC     := ./projects/$(PROJECT)/
-BUILD   := ./build/$(PROJECT)/
-#OBJECTS := ./build/objects/$(PROJECT)/
+BUILD   := ./build/$(PROJECT)/$(ARCH)/$(STATE)/
 INCS 	:= -I./shared/inc/
 LIBS 	:= -L./shared/lib/$(ARCH)/
 
 ifeq ($(ARCH),x86)
-    CFLAGS := -m32 -Wall
-    CXXFLAGS := -m32 -std=c++20 -Wall
+    CFLAGS := -m32 $(INCS) -Wall
+    CXXFLAGS := -m32  $(INCS) -std=c++20 -Wall
     ASFLAGS := -f elf
     LDFLAGS := -m elf_i386 -T linker.ld
 else ifeq ($(ARCH),x64)
-    CFLAGS := -m64 -Wall
-    CXXFLAGS := -m64 -std=c++20 -Wall
+    CFLAGS := -m64 $(INCS) -Wall
+    CXXFLAGS := -m64 $(INCS) -std=c++20 -Wall
     ASFLAGS := -f elf64
     LDFLAGS := -m elf_x86_64 -T linker.ld
 endif
@@ -45,16 +48,25 @@ ASM_OBJS = $(ASM_SOURCES:.asm=.o)
 C_OBJS = $(C_SOURCES:.c=.o)
 CXX_OBJS = $(CXX_SOURCES:.cpp=.o)
 
-$(OUT): $(ASM_OBJS)
-    $(CC) $(ASFLAGS) -o $@ $^
+$(ASM_OBJS): $(ASM_SOURCES)
+	$(CC) $(ASFLAGS) -o $@ $^
 
-$(OUT): $(C_OBJS)
-    $(CC) $(CFLAGS) -o $@ $^
+$(C_OBJS): $(C_SOURCES)
+	$(CC) $(CFLAGS) $(INCS) -c -o $@ $^
 
-$(OUT): $(CXX_OBJS)
-    $(CXX) $(CXXFLAGS) -o $@ $^
+$(CXX_OBJS): $(CXX_SOURCES)
+	$(CXX) $(CXXFLAGS) $(INCS) -c -o $@ $^
 
-rebuid: clean build
-build: $(OUT)
+$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS)
+	$(CXX) $(LDFLAGS) $(LIBS) -o $@ $^
+
+build:
+	mkdir -p $(BUILD)
+	$(OUT)
+rebuild: clean build
 clean:
-    rm build
+	rm -rf $(ASM_OBJS)
+	rm -rf $(C_OBJS)
+	rm -rf $(CXX_OBJS)
+	rm -rf $(BUILD)
+
