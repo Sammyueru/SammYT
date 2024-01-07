@@ -60,9 +60,10 @@ $(CXX_OBJS): $(CXX_SOURCES)
 $(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS)
 	$(CXX) $(LDFLAGS) $(LIBS) -o $@ $^
 
-build:
+one:
 	mkdir -p $(BUILD)
 	$(OUT)
+
 rebuild: clean build
 clean:
 	rm -rf $(ASM_OBJS)
