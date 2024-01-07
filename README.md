@@ -12,5 +12,10 @@ Smaller projects that don't need their own repositories specificately shown on Y
 # Build Example
 ```make PROJECT=float_compress OS=WIN one```
 
+# COPYRIGHT
+(c) 2024 Samm
+
+While these projects are licensed under the MIT license (in the LICENSE file) please check all the licenses in the licenses folder and any of it's subdirectories
+
 # Note
 none of these projects are done in fact I've been having trouble getting the makefile to work so this is a work in progress
