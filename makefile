@@ -24,7 +24,7 @@ export PKG_CONFIG_PATH := "$(ROOT)shared/lib/$(ARCH)/pkgconfig/"
 SRC     := ./projects/$(PROJECT)/
 BUILD   := ./build/$(PROJECT)/$(ARCH)_$(STATE)/
 INCS    := -I"$(ROOT)shared/inc/"
-LIBS    := $(shell pkg-config --static --libs sdl2) -lmingw32 -L"$(ROOT)shared/lib/$(ARCH)" -lSDL2main -mwindows -lSDL2 -lversion -lgdi32 -limm32 -lstdc++
+LIBS    := $(shell pkg-config --static --libs sdl2) -lmingw32 -L"$(ROOT)shared/lib/$(ARCH)" -lSDL2main -limgui -mwindows -Wl,--dynamicbase -Wl,--nxcompat -Wl,--high-entropy-va -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion -luuid
 #`pkg-config --static --libs sdl2`
 #LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -Wl,--end-group
 # -L$(ROOT)shared/lib/$(ARCH)/ -limgui
@@ -71,7 +71,7 @@ ASM_SOURCES += $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.asm'))
 C_SOURCES 	:= $(wildcard $(shell find $(SRC) -name '*.c'))
 C_SOURCES 	+= $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.c'))
 #C_SOURCES	+= $(wildcard $(shell find $(ROOT)shared/inc/ -name '*.c'))
-IMGUISRC    := $(wildcard "$(ROOT)shared/inc/imgui/*.cpp")
+IMGUISRC    := $(wildcard $(shell find "$(ROOT)shared/inc/imgui/" -name '*.cpp'))
 #IMGUISRC    := $(filter-out $(ROOT)shared/inc/imgui/added_by_samm.cpp, $(wildcard $(ROOT)shared/inc/imgui/*.cpp))
 #IMGUISRC    += $(ROOT)shared/inc/imgui/added_by_samm.cpp
 CXX_SOURCES := $(wildcard $(shell find $(SRC) -name '*.cpp'))
@@ -115,9 +115,9 @@ $(IMGUIOBJS): $(IMGUISRC)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 #-lSDL2main -lSDL2
 
-$(IMGUIOBJ): $(IMGUIOBJS)
-	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ $(LIBS)
+#$(IMGUIOBJ): $(IMGUIOBJS)
 #	ar rcs $@ $^
+#	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ $(LIBS)
 
 -include $(C_OBJS:.o=.d)
 -include $(CXX_OBJS:.o=.d)
@@ -129,13 +129,13 @@ $(CXX_OBJS): $(CXX_SOURCES)
 create_directories:
 	mkdir -p $(BUILD)
 
-#$(ROOT)shared/lib/$(ARCH)/libimgui.a: $(IMGUIOBJS)
-#	ar rcs $@ $^
+$(ROOT)shared/lib/$(ARCH)/libimgui.a: $(IMGUIOBJS)
+	ar rcs $@ $^
 
 build_libs: $(ROOT)shared/lib/$(ARCH)/libimgui.a
 
-$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJ)
-	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ -lmingw32 $(LIBS)
+$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJS) # $(IMGUIOBJS)
+	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ $(LIBS)
 
 #$(ASM_OBJS) $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC)
 
