@@ -19,7 +19,7 @@ TYPE 	?=SOFTWARE
 SRC     := ./projects/$(PROJECT)/
 BUILD   := ./build/$(PROJECT)/$(ARCH)_$(STATE)/
 INCS    := -I$(ROOT)shared/inc/
-LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2 -Wl,--end-group -lversion -lgdi32 -limm32 -lSDL2main
+LIBS    := -L./shared/lib/$(ARCH)/ -lSDL2 -lversion -lgdi32 -limm32 -lSDL2main
 #`pkg-config --static --libs sdl2`
 #LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -Wl,--end-group
 # -L$(ROOT)shared/lib/$(ARCH)/ -limgui
