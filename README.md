@@ -29,13 +29,6 @@ MSYS2:
 18. Hit enter and click "OK"
 19. That window will close but you need to click "OK" on the remaining opened windows on/after step 14
 20. Your done setting up MSYS2!
-# SDL2
-1. Find MSYS2's install directory (default is: C:/msys64)
-2. In that directory run "ucrt64.exe"
-3. In the new command prompt looking window that pops up type in "pacman -S mingw-w64-ucrt-x86_64-SDL2" and hit enter
-4. If and when your asked to type "Y/n" type "Y" and hit enter
-5. Do the same for "pacman -S mingw-w64-ucrt-x86_64-SDL2_image"
-
 
 # Building
 1. Find the folder name of the project you want to compile within the projects folder
