@@ -16,8 +16,11 @@ TYPE 	?=SOFTWARE
 
 SRC     := ./projects/$(PROJECT)/
 BUILD   := ./build/$(PROJECT)/$(ARCH)_$(STATE)/
-INCS 	:= -I$(ROOT)shared/inc/
-LIBS 	:= -lmingw32 -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -ldinput8 -ldxguid -ldxerr8 -luser32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion -lgdi32
+INCS    := -I$(ROOT)shared/inc/
+LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2 -Wl,--end-group -lversion -lgdi32 -limm32 -lSDL2main
+#LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -Wl,--end-group
+# -L$(ROOT)shared/lib/$(ARCH)/ -limgui
+#BLIBS   := -limgui
 
 #ifeq ($(OS),WIN)
 #	LIBS += -lversion -lgdi32 -limm32
@@ -37,7 +40,7 @@ endif
 # LDFLAGS  += -m elf_i386 -T linker.ld
 # LDFLAGS  += -m elf_x86_64 -T linker.ld
 
-OUT := $(BUILD)$(PROJECT).exe
+OUT     := $(BUILD)$(PROJECT).exe
 ifeq ($(OS),WIN)
 	OUT := $(BUILD)$(PROJECT).exe
 else ifeq ($(OS),LINUX)
@@ -58,38 +61,60 @@ ASM_SOURCES := $(wildcard $(shell find $(ROOT)shared/inc/ $(SRC) -name '*.asm'))
 C_SOURCES 	:= $(wildcard $(shell find $(ROOT)shared/inc/ $(SRC) -name '*.c'))
 #C_SOURCES	+= $(wildcard $(shell find $(ROOT)shared/inc/ -name '*.c'))
 IMGUISRC    := $(wildcard $(ROOT)shared/inc/imgui/*.cpp)
+IMGUISRC    := $(filter-out $(ROOT)shared/inc/imgui/added_by_samm.cpp, $(wildcard $(ROOT)shared/inc/imgui/*.cpp))
+#IMGUISRC    += $(ROOT)shared/inc/imgui/added_by_samm.cpp
 CXX_SOURCES := $(wildcard $(shell find $(ROOT)shared/inc/ $(SRC) -name '*.cpp'))
 #CXX_SOURCES += $(wildcard $(shell find $(ROOT)shared/inc/ -name '*.cpp'))
 CXX_SOURCES := $(filter-out $(IMGUISRC), $(CXX_SOURCES))
 
-ASM_OBJS  := $(patsubst %.asm,%.o,$(ASM_SOURCES))
-C_OBJS    := $(patsubst %.c,%.o,$(C_SOURCES))
-CXX_OBJS  := $(patsubst %.cpp,%.o,$(CXX_SOURCES))
-IMGUIOBJS := $(IMGUISRC:.cpp=.o)
+ASM_OBJS  := $(patsubst %.asm,%.asm.o,$(ASM_SOURCES))
+C_OBJS    := $(patsubst %.c,%.c.o,$(C_SOURCES))
+CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CXX_SOURCES))
+IMGUIOBJS := $(patsubst %.cpp,%.imgui.o,$(IMGUISRC))
+IMGUIOBJ  := $(ROOT)shared/inc/imgui/dear.imgui.o
 
-$(ASM_OBJS) : $(ASM_SOURCES)
-	$(CC) $(ASFLAGS) $< -o $^
+$(ASM_OBJS): $(ASM_SOURCES)
+	$(CC) $(ASFLAGS) -c $< -o $@
 
-$(C_OBJS) : $(C_SOURCES)
+$(C_OBJS): $(C_SOURCES)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(IMGUIOBJS): $(IMGUISRC)
-	$(CXX) $(CXXFLAGS) $(INCS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+#-lSDL2main -lSDL2
 
-$(CXX_OBJS) : $(CXX_SOURCES)
+$(IMGUIOBJ): $(IMGUIOBJS)
+	ar rcs $@ $^
+#	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ -lmingw32 $(LIBS)
+
+$(CXX_OBJS): $(CXX_SOURCES)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 create_directories:
 	mkdir -p $(BUILD)
 
-$(OUT) : $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJS)
-	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ $(LIBS)
+$(ROOT)shared/lib/$(ARCH)/libimgui.a: $(IMGUIOBJS)
+	ar rcs $@ $^
 
-.PHONY: one
+build_libs: $(ROOT)shared/lib/$(ARCH)/libimgui.a
+
+$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJ)
+	$(CXX) -DSDL_main -DSDL_MAIN_HANDLED $(LDFLAGS) $(INCS) $^ -o $@ -lmingw32 $(LIBS)
+
+.PHONY:
 
 one: create_directories $(OUT)
+#one_all: build_libs one
 
 rebuild: clean one
 clean:
-	rm -rf $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJS) $(BUILD)
+	rm -rf $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(wildcard $(IMGUIOBJS)) $(IMGUIOBJ) $(BUILD)
 
+clean_libs:
+	rm -rf $(ROOT)shared/lib/$(ARCH)/libimgui.a
+
+clean_with_libs:
+	clean
+	clean_libs
+
+#EOF
