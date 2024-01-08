@@ -14,10 +14,13 @@ ARCH 	?=x64
 # SOFTWARE, OS
 TYPE 	?=SOFTWARE
 
+#export PKG_CONFIG_PATH := $(ROOT)shared/lib/$(ARCH)/pkgconfig/
+
 SRC     := ./projects/$(PROJECT)/
 BUILD   := ./build/$(PROJECT)/$(ARCH)_$(STATE)/
 INCS    := -I$(ROOT)shared/inc/
 LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2 -Wl,--end-group -lversion -lgdi32 -limm32 -lSDL2main
+#`pkg-config --static --libs sdl2`
 #LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -Wl,--end-group
 # -L$(ROOT)shared/lib/$(ARCH)/ -limgui
 #BLIBS   := -limgui
@@ -30,13 +33,14 @@ ifeq ($(ARCH),x86)
 	CFLAGS   := -m32 $(INCS) -Wall
 	CXXFLAGS := -m32 -std=c++20 $(INCS) -Wall
 	ASFLAGS  := -m32 -f elf
-	LDFLAGS  := -m32 -L./shared/lib/$(ARCH)/
+	LDFLAGS  := -m32
 else ifeq ($(ARCH),x64)
 	CFLAGS   := -m64 $(INCS) -Wall
 	CXXFLAGS := -m64 -std=c++20 $(INCS) -Wall
 	ASFLAGS  := -m64 -f elf64
-	LDFLAGS  := -m64 -L./shared/lib/$(ARCH)/
+	LDFLAGS  := -m64
 endif
+#`pkg-config --cflags sdl2`
 # LDFLAGS  += -m elf_i386 -T linker.ld
 # LDFLAGS  += -m elf_x86_64 -T linker.ld
 
@@ -67,9 +71,25 @@ CXX_SOURCES := $(wildcard $(shell find $(ROOT)shared/inc/ $(SRC) -name '*.cpp'))
 #CXX_SOURCES += $(wildcard $(shell find $(ROOT)shared/inc/ -name '*.cpp'))
 CXX_SOURCES := $(filter-out $(IMGUISRC), $(CXX_SOURCES))
 
+C_ALL_SRC	   := $(C_SOURCES)
+CPP_ALL_SRC    := $(CXX_SOURCES) $(IMGUISRC)
+CPPNEW_ALL_SRC := $(patsubst %.cpp,%.new.cpp,$(CPP_ALL_SRC))
+CNEW_ALL_SRC   := $(patsubst %.c,%.new.c,$(C_ALL_SRC))
+
+$(CNEW_ALL_SRC): $(C_ALL_SRC)
+	$(CXX) $(CFLAGS) -E -DSDL_MAIN_HANDLED $< -o $@
+
+$(CPPNEW_ALL_SRC): $(CPP_ALL_SRC)
+	$(CXX) $(CXXFLAGS) -E -DSDL_MAIN_HANDLED -E -Dmain=SDL_main $< -o $@
+
+preprocess: $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC)
+
 ASM_OBJS  := $(patsubst %.asm,%.asm.o,$(ASM_SOURCES))
-C_OBJS    := $(patsubst %.c,%.c.o,$(C_SOURCES))
-CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CXX_SOURCES))
+#C_OBJS    := $(patsubst %.c,%.c.o,$(C_SOURCES))
+#CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CXX_SOURCES))
+C_OBJS    := $(patsubst %.c,%.c.o,$(CNEW_ALL_SRC))
+CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CNEW_ALL_SRC))
+
 IMGUIOBJS := $(patsubst %.cpp,%.imgui.o,$(IMGUISRC))
 IMGUIOBJ  := $(ROOT)shared/inc/imgui/dear.imgui.o
 
@@ -98,8 +118,8 @@ $(ROOT)shared/lib/$(ARCH)/libimgui.a: $(IMGUIOBJS)
 
 build_libs: $(ROOT)shared/lib/$(ARCH)/libimgui.a
 
-$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJ)
-	$(CXX) -DSDL_main -DSDL_MAIN_HANDLED $(LDFLAGS) $(INCS) $^ -o $@ -lmingw32 $(LIBS)
+$(OUT): $(ASM_OBJS) $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC) #$(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) #$(IMGUIOBJ)
+	$(CXX) $(LDFLAGS) $(INCS) -DSDL_MAIN_HANDLED $^ -o $@ -lmingw32 $(LIBS)
 
 .PHONY:
 
@@ -108,7 +128,7 @@ one: create_directories $(OUT)
 
 rebuild: clean one
 clean:
-	rm -rf $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(wildcard $(IMGUIOBJS)) $(IMGUIOBJ) $(BUILD)
+	rm -rf $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(CPPNEW_ALL_SRC) $(CNEW_ALL_SRC) $(wildcard $(IMGUIOBJS)) $(IMGUIOBJ) $(BUILD)
 
 clean_libs:
 	rm -rf $(ROOT)shared/lib/$(ARCH)/libimgui.a
