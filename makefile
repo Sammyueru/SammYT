@@ -19,7 +19,7 @@ TYPE 	?=SOFTWARE
 SRC     := ./projects/$(PROJECT)/
 BUILD   := ./build/$(PROJECT)/$(ARCH)_$(STATE)/
 INCS    := -I$(ROOT)shared/inc/
-LIBS    := -L./shared/lib/$(ARCH)/ -lSDL2 -lversion -lgdi32 -limm32 -lSDL2main
+LIBS    := -lmingw32 -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -mwindows -lversion -lgdi32 -limm32 -lstdc++
 #`pkg-config --static --libs sdl2`
 #LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -Wl,--end-group
 # -L$(ROOT)shared/lib/$(ARCH)/ -limgui
@@ -119,7 +119,7 @@ $(ROOT)shared/lib/$(ARCH)/libimgui.a: $(IMGUIOBJS)
 build_libs: $(ROOT)shared/lib/$(ARCH)/libimgui.a
 
 $(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJ)
-	$(CXX) $(LDFLAGS) $(INCS) -DSDL_MAIN_HANDLED -Dmain=SDL_main $^ -o $@ -lmingw32 $(LIBS)
+	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ -lmingw32 $(LIBS)
 
 #$(ASM_OBJS) $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC)
 
