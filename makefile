@@ -26,12 +26,12 @@ LIBS 	:= -lmingw32 -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -ldinput8 -ldxguid 
 ifeq ($(ARCH),x86)
 	CFLAGS   := -m32 $(INCS) -Wall
 	CXXFLAGS := -m32 -std=c++20 $(INCS) -Wall
-	ASFLAGS  := -f elf
+	ASFLAGS  := -m32 -f elf
 	LDFLAGS  := -m32 -L./shared/lib/$(ARCH)/
 else ifeq ($(ARCH),x64)
 	CFLAGS   := -m64 $(INCS) -Wall
 	CXXFLAGS := -m64 -std=c++20 $(INCS) -Wall
-	ASFLAGS  := -f elf64
+	ASFLAGS  := -m64 -f elf64
 	LDFLAGS  := -m64 -L./shared/lib/$(ARCH)/
 endif
 # LDFLAGS  += -m elf_i386 -T linker.ld
@@ -57,12 +57,15 @@ ASM_SOURCES := $(wildcard $(shell find $(ROOT)shared/inc/ $(SRC) -name '*.asm'))
 #ASM_SOURCES += $(wildcard $(shell find $(ROOT)shared/inc/* -name '*.S'))
 C_SOURCES 	:= $(wildcard $(shell find $(ROOT)shared/inc/ $(SRC) -name '*.c'))
 #C_SOURCES	+= $(wildcard $(shell find $(ROOT)shared/inc/ -name '*.c'))
+IMGUISRC    := $(wildcard $(ROOT)shared/inc/imgui/*.cpp)
 CXX_SOURCES := $(wildcard $(shell find $(ROOT)shared/inc/ $(SRC) -name '*.cpp'))
 #CXX_SOURCES += $(wildcard $(shell find $(ROOT)shared/inc/ -name '*.cpp'))
+CXX_SOURCES := $(filter-out $(IMGUISRC), $(CXX_SOURCES))
 
-ASM_OBJS = $(patsubst %.asm,%.o,$(ASM_SOURCES))
-C_OBJS   = $(patsubst %.c,%.o,$(C_SOURCES))
-CXX_OBJS = $(patsubst %.cpp,%.o,$(CXX_SOURCES))
+ASM_OBJS  := $(patsubst %.asm,%.o,$(ASM_SOURCES))
+C_OBJS    := $(patsubst %.c,%.o,$(C_SOURCES))
+CXX_OBJS  := $(patsubst %.cpp,%.o,$(CXX_SOURCES))
+IMGUIOBJS := $(IMGUISRC:.cpp=.o)
 
 $(ASM_OBJS) : $(ASM_SOURCES)
 	$(CC) $(ASFLAGS) $< -o $^
@@ -70,14 +73,17 @@ $(ASM_OBJS) : $(ASM_SOURCES)
 $(C_OBJS) : $(C_SOURCES)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(IMGUIOBJS): $(IMGUISRC)
+	$(CXX) $(CXXFLAGS) $(INCS) -c $< -o $@
+
 $(CXX_OBJS) : $(CXX_SOURCES)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 create_directories:
 	mkdir -p $(BUILD)
 
-$(OUT) : $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(INCS) $(LIBS)
+$(OUT) : $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJS)
+	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ $(LIBS)
 
 .PHONY: one
 
@@ -85,5 +91,5 @@ one: create_directories $(OUT)
 
 rebuild: clean one
 clean:
-	rm -rf $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(BUILD)
+	rm -rf $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJS) $(BUILD)
 
