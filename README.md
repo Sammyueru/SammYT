@@ -37,6 +37,12 @@ MSYS2:
 # Build Example
 ```make PROJECT=float_compress OS=WIN one```
 
+# Clean Example
+```make PROJECT=float_compress OS=WIN clean```
+
+# Rebuild Example
+```make PROJECT=float_compress OS=WIN rebuild```
+
 # COPYRIGHT
 (c) 2024 Samm
 
