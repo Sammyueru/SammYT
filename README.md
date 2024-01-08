@@ -32,16 +32,16 @@ MSYS2:
 
 # Building
 1. Find the folder name of the project you want to compile within the projects folder
-2. Compile that project using the command ```make PROJECT=[project you want to compile] OS=[WIN, LINUX, or MACOS (although i've only tested WIN)] [optional: ARCH=[currently just x86 or x64] STATE=[RELEASE or DEBUG] TYPE=[just SOFTWARE for now]] one```
+2. Compile that project using the command ```make PROJECT=[project you want to compile] OSS=[WIN, LINUX, or MACOS (although i've only tested WIN)] [optional: ARCH=[currently just x86 or x64] STATE=[RELEASE or DEBUG] TYPE=[just SOFTWARE for now]] one```
 
 # Build Example
-```make PROJECT=float_compress OS=WIN one```
+```make PROJECT=float_compress OSS=WIN one```
 
 # Clean Example
-```make PROJECT=float_compress OS=WIN clean```
+```make PROJECT=float_compress OSS=WIN clean```
 
 # Rebuild Example
-```make PROJECT=float_compress OS=WIN rebuild```
+```make PROJECT=float_compress OSS=WIN rebuild```
 
 # COPYRIGHT
 (c) 2024 Samm
