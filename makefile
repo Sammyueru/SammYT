@@ -73,22 +73,22 @@ CXX_SOURCES := $(filter-out $(IMGUISRC), $(CXX_SOURCES))
 
 C_ALL_SRC	   := $(C_SOURCES)
 CPP_ALL_SRC    := $(CXX_SOURCES) $(IMGUISRC)
-CPPNEW_ALL_SRC := $(patsubst %.cpp,%.new.cpp,$(CPP_ALL_SRC))
-CNEW_ALL_SRC   := $(patsubst %.c,%.new.c,$(C_ALL_SRC))
+#CPPNEW_ALL_SRC := $(patsubst %.cpp,%.new.cpp,$(CPP_ALL_SRC))
+#CNEW_ALL_SRC   := $(patsubst %.c,%.new.c,$(C_ALL_SRC))
 
-$(CNEW_ALL_SRC): $(C_ALL_SRC)
-	$(CXX) $(CFLAGS) -E -DSDL_MAIN_HANDLED $< -o $@
+#$(CNEW_ALL_SRC): $(C_ALL_SRC)
+#	$(CXX) $(CFLAGS) -E -DSDL_MAIN_HANDLED $< -o $@
+#
+#$(CPPNEW_ALL_SRC): $(CPP_ALL_SRC)
+#	$(CXX) $(CXXFLAGS) -E -DSDL_MAIN_HANDLED -E -Dmain=SDL_main $< -o $@
 
-$(CPPNEW_ALL_SRC): $(CPP_ALL_SRC)
-	$(CXX) $(CXXFLAGS) -E -DSDL_MAIN_HANDLED -E -Dmain=SDL_main $< -o $@
-
-preprocess: $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC)
+#preprocess: $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC)
 
 ASM_OBJS  := $(patsubst %.asm,%.asm.o,$(ASM_SOURCES))
-#C_OBJS    := $(patsubst %.c,%.c.o,$(C_SOURCES))
-#CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CXX_SOURCES))
-C_OBJS    := $(patsubst %.c,%.c.o,$(CNEW_ALL_SRC))
-CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CNEW_ALL_SRC))
+C_OBJS    := $(patsubst %.c,%.c.o,$(C_SOURCES))
+CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CXX_SOURCES))
+#C_OBJS    := $(patsubst %.c,%.c.o,$(CNEW_ALL_SRC))
+#CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CNEW_ALL_SRC))
 
 IMGUIOBJS := $(patsubst %.cpp,%.imgui.o,$(IMGUISRC))
 IMGUIOBJ  := $(ROOT)shared/inc/imgui/dear.imgui.o
@@ -118,8 +118,10 @@ $(ROOT)shared/lib/$(ARCH)/libimgui.a: $(IMGUIOBJS)
 
 build_libs: $(ROOT)shared/lib/$(ARCH)/libimgui.a
 
-$(OUT): $(ASM_OBJS) $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC) #$(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) #$(IMGUIOBJ)
-	$(CXX) $(LDFLAGS) $(INCS) -DSDL_MAIN_HANDLED $^ -o $@ -lmingw32 $(LIBS)
+$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUIOBJ)
+	$(CXX) $(LDFLAGS) $(INCS) -DSDL_MAIN_HANDLED -Dmain=SDL_main $^ -o $@ -lmingw32 $(LIBS)
+
+#$(ASM_OBJS) $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC)
 
 .PHONY:
 
