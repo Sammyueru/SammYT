@@ -16,7 +16,7 @@ TYPE 	?=SOFTWARE
 SRC     := ./projects/$(PROJECT)/
 BUILD   := ./build/$(PROJECT)/$(ARCH)_$(STATE)/
 INCS 	:= -I./shared/inc/
-LIBS 	:= -L./shared/lib/$(ARCH)/ -lmingw32 -lSDL2main -lSDL2
+LIBS 	:= -lmingw32 -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -lSDL2.dll -ldinput8 -ldxguid -ldxerr8 -luser32 -lwinmm -lole32 -loleaut32 -lshell32 -lsetupapi
 
 ifeq ($(OS),WIN)
 	LIBS += -lversion -lgdi32 -limm32
@@ -24,14 +24,14 @@ endif
 
 ifeq ($(ARCH),x86)
 	CFLAGS   := -m32 $(INCS) -Wall
-	CXXFLAGS := -m32  $(INCS) -std=c++20 -Wall
+	CXXFLAGS := -m32 -std=c++20 $(INCS) -Wall
 	ASFLAGS  := -f elf
-	LDFLAGS  := 
+	LDFLAGS  := $(LIBS)
 else ifeq ($(ARCH),x64)
 	CFLAGS   := -m64 $(INCS) -Wall
-	CXXFLAGS := -m64 $(INCS) -std=c++20 -Wall
+	CXXFLAGS := -m64 -std=c++20 $(INCS) -Wall
 	ASFLAGS  := -f elf64
-	LDFLAGS  := 
+	LDFLAGS  := $(LIBS)
 endif
 # LDFLAGS  += -m elf_i386 -T linker.ld
 # LDFLAGS  += -m elf_x86_64 -T linker.ld
@@ -68,9 +68,9 @@ create_directories:
 	mkdir -p $(BUILD)
 
 $(OUT) : $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS)
-	$(CXX) $(LDFLAGS) $(LIBS) -o $@ $^
+	$(CXX) $(LDFLAGS) -o $@ $^
 
-.PHONY: 
+.PHONY:
 
 one: create_directories $(OUT)
 
