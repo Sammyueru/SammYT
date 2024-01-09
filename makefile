@@ -68,23 +68,31 @@ endif
 #C_SOURCES   := $(wildcard $(ROOT)shared/inc/*.c) $(wildcard $(SRC)*.c)
 #CXX_SOURCES := $(wildcard $(ROOT)shared/inc/*.cpp) $(wildcard $(SRC)*.cpp)
 
-ASM_SOURCES := $(wildcard $(shell find "$(SRC)" -name '*.asm'))
-ASM_SOURCES += $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.asm'))
+#ASM_SOURCES := $(wildcard $(shell find "$(SRC)" -name '*.asm'))
+#ASM_SOURCES += $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.asm'))
+ASM_SOURCES := $(wildcard $(ROOT)shared/inc/**/*.asm) $(wildcard $(ROOT)shared/inc/**/*.S) $(wildcard $(SRC)**/*.asm) $(wildcard $(SRC)**/*.S)
 #ASM_SOURCES += $(wildcard $(shell find $(ROOT)shared/inc/* -name '*.asm'))
 #ASM_SOURCES += $(wildcard $(shell find $(ROOT)shared/inc/* -name '*.S'))
-C_SOURCES 	:= $(wildcard $(shell find "$(SRC)" -name '*.c'))
-C_SOURCES 	+= $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.c'))
+#C_SOURCES 	:= $(wildcard $(shell find "$(SRC)" -name '*.c'))
+#C_SOURCES 	+= $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.c'))
+C_SOURCES := \
+	$(wildcard $(ROOT)shared/inc/**/*.c) \
+	$(wildcard $(SRC)**/*.c)
 #C_SOURCES	+= $(wildcard $(shell find $(ROOT)shared/inc/ -name '*.c'))
 
-#IMGUISRC    := $(wildcard $(shell find "$(ROOT)shared/inc/imgui/" -name '*.cpp'))
+IMGUISRC    := $(wildcard $(shell find "$(ROOT)shared/inc/imgui/" -name '*.cpp'))
 
 #IMGUISRC    := $(filter-out $(ROOT)shared/inc/imgui/added_by_samm.cpp, $(wildcard $(ROOT)shared/inc/imgui/*.cpp))
 #IMGUISRC    += $(ROOT)shared/inc/imgui/added_by_samm.cpp
-CXX_SOURCES := $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.cpp'))
-CXX_SOURCES += $(wildcard $(shell find "$(SRC)" -name '*.cpp'))
+#CXX_SOURCES := $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.cpp'))
+#CXX_SOURCES += $(wildcard $(shell find "$(SRC)" -name '*.cpp'))
+CXX_SOURCES := \
+	$(wildcard $(ROOT)shared/inc/**/*.cpp) \
+	$(wildcard $(SRC)**/*.cpp)
+
 #CXI_SOURCES := $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.cpp'))
 
-#CXX_SOURCES := $(filter-out $(IMGUISRC), $(CXX_SOURCES))
+CXX_SOURCES := $(filter-out $(IMGUISRC), $(CXX_SOURCES))
 
 C_ALL_SRC	   := $(C_SOURCES)
 CPP_ALL_SRC    := $(CXX_SOURCES) $(IMGUISRC)
@@ -99,14 +107,14 @@ CPP_ALL_SRC    := $(CXX_SOURCES) $(IMGUISRC)
 
 #preprocess: $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC)
 
-ASM_OBJS  := $(patsubst %.asm,%.asm.o,$(ASM_SOURCES))
-C_OBJS    := $(patsubst %.c,%.c.o,$(C_SOURCES))
-CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CXX_SOURCES))
+ASM_OBJS  := $(patsubst %.asm,$(BUILD)objects/%.asm.o,$(notdir $(ASM_SOURCES)))
+C_OBJS    := $(patsubst %.c,$(BUILD)objects/%.c.o,$(notdir $(C_SOURCES)))
+CXX_OBJS  := $(patsubst %.cpp,$(BUILD)objects/%.cpp.o,$(notdir $(CXX_SOURCES)))
 #CXI_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CXI_SOURCES))
 #C_OBJS    := $(patsubst %.c,%.c.o,$(CNEW_ALL_SRC))
 #CXX_OBJS  := $(patsubst %.cpp,%.cpp.o,$(CNEW_ALL_SRC))
 
-#IMGUIOBJS := $(patsubst %.cpp,%.imgui.o,$(IMGUISRC))
+IMGUIOBJS := $(patsubst %.cpp,$(BUILD)objects/%.imgui.o,$(IMGUISRC))
 #IMGUIOBJ  := "$(ROOT)shared/inc/imgui/dear.imgui.o"
 
 $(ASM_OBJS): $(ASM_SOURCES)
@@ -118,30 +126,31 @@ $(C_OBJS): $(C_SOURCES)
 #$(CXI_OBJS): $(CXI_SOURCES)
 #	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-#$(IMGUIOBJS): $(IMGUISRC)
-#	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(IMGUIOBJS): $(IMGUISRC)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 #-lSDL2main -lSDL2
 
 #$(IMGUIOBJ): $(IMGUIOBJS)
 #	ar rcs $@ $^
 #	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ $(LIBS)
 
--include $(C_OBJS:.o=.d)
--include $(CXX_OBJS:.o=.d)
--include $(ASM_OBJS:.o=.d)
+#-include $(C_OBJS:.o=.d)
+#-include $(CXX_OBJS:.o=.d)
+#-include $(ASM_OBJS:.o=.d)
 
 $(CXX_OBJS): $(CXX_SOURCES)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 create_directories:
-	mkdir -p $(BUILD)
+	mkdir -p $(BUILD) $(foreach file,$(IMGUIOBJS),$(shell dirname $(file))) $(foreach file,$(ASM_OBJS),$(shell dirname $(file))) $(foreach file,$(C_OBJS),$(shell dirname $(file))) $(foreach file,$(CXX_OBJS),$(shell dirname $(file)))
 
-#$(ROOT)shared/lib/$(ARCH)/libimgui.a: $(IMGUIOBJS)
+#"$(ROOT)shared/lib/$(ARCH)/libimgui.a": $(IMGUIOBJS)
+#	$(CXX) $(LDFLAGS) -shared -o $@ $^
 #	ar rcs $@ $^
 
-#build_libs: $(ROOT)shared/lib/$(ARCH)/libimgui.a
+#build_libs: create_directories "$(ROOT)shared/lib/$(ARCH)/libimgui.a"
 
-$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) # $(IMGUIOBJS)
+$(OUT): $(IMGUIOBJS) $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) # $(IMGUIOBJS)
 	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ $(LIBS)
 
 #$(ASM_OBJS) $(CNEW_ALL_SRC) $(CPPNEW_ALL_SRC)
@@ -149,6 +158,7 @@ $(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) # $(IMGUIOBJS)
 #.PHONY:
 
 test:
+	@echo $(CXX_SOURCES)
 	@echo $(PKG_CONFIG_PATH)
 	pkg-config --libs sdl2
 
