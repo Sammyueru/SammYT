@@ -40,12 +40,12 @@ LIBS    := -lmingw32 -L"$(ROOT)shared/lib/$(ARCH)" -lSDL2 -lSDL2main -limgui.dll
 
 ifeq ($(ARCH),x86)
 	CFLAGS   := -m32 $(INCS) -Wall
-	CXXFLAGS := -m32 -std=c++20 -MMD -MP $(INCS) -Wall
+	CXXFLAGS := -m32 -std=c++20 -MMD -MP -pthread $(INCS) -Wall
 	ASFLAGS  := -m32 -f elf
 	LDFLAGS  := -m32
 else ifeq ($(ARCH),x64)
 	CFLAGS   := -m64 $(INCS) -Wall
-	CXXFLAGS := -m64 -std=c++20 -MMD -MP $(INCS) -Wall
+	CXXFLAGS := -m64 -std=c++20 -MMD -MP -pthread $(INCS) -Wall
 	ASFLAGS  := -m64 -f elf64
 	LDFLAGS  := -m64
 endif
