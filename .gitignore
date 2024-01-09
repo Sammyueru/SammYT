@@ -3,3 +3,4 @@ build
 *.o
 assets
 *.d
+a.exe
