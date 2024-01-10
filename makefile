@@ -87,6 +87,7 @@ IMGUISRC    := $(wildcard $(shell find "$(ROOT)shared/inc/imgui/" -name '*.cpp')
 #CXX_SOURCES := $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.cpp'))
 #CXX_SOURCES += $(wildcard $(shell find "$(SRC)" -name '*.cpp'))
 CXX_SOURCES := \
+	$(wildcard $(ROOT)shared/inc/**/*.cpp) \
 	$(wildcard $(SRC)*.cpp) \
 	$(wildcard $(SRC)**/*.cpp)
 #	$(wildcard $(ROOT)shared/inc/**/*.cpp)
@@ -94,7 +95,7 @@ CXX_SOURCES := \
 #CXI_SOURCES := $(wildcard $(shell find "$(ROOT)shared/inc/" -name '*.cpp'))
 
 # Change to INC_SOURCES:
-#CXX_SOURCES := $(filter-out $(wildcard $(ROOT)shared/inc/imgui/**/*.cpp), $(CXX_SOURCES)) #$(filter-out $(IMGUISRC), $(CXX_SOURCES))
+CXX_SOURCES := $(filter-out $(wildcard $(ROOT)shared/inc/imgui/**.cpp), $(CXX_SOURCES)) #$(filter-out $(IMGUISRC), $(CXX_SOURCES))
 
 C_ALL_SRC	   := $(C_SOURCES)
 CPP_ALL_SRC    := $(CXX_SOURCES) $(IMGUISRC)
