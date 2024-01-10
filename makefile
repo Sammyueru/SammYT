@@ -167,7 +167,7 @@ $(IMGUI_DLL_A): $(IMGUI_DLL)
 
 build_libs: create_directories $(IMGUI_DLL_A) #"$(ROOT)shared/lib/$(ARCH)/libimgui.a"
 
-$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) # $(IMGUIOBJS)
+$(OUT): $(ASM_OBJS) $(C_OBJS) $(CXX_OBJS) $(IMGUI_DLL) # $(IMGUIOBJS)
 	$(CXX) $(LDFLAGS) $(INCS) $^ -o $@ $(LIBS)
 	cp $(IMGUI_DLL) $(dir $(OUT))
 
