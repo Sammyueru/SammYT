@@ -29,6 +29,11 @@ SRC     := ./projects/$(PROJECT)/
 BUILD   := ./build/$(PROJECT)/$(ARCH)_$(STATE)/
 INCS    := -I"$(ROOT)shared/inc/"
 LIBS    := -lmingw32 -L"$(ROOT)shared/lib/$(ARCH)" -lSDL2 -lSDL2main -limgui.dll -mwindows -Wl,--dynamicbase -Wl,--nxcompat -Wl,--high-entropy-va -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion -luuid
+
+ifeq ($(STATE),DEBUG)
+	LIBS    := -lmingw32 -L"$(ROOT)shared/lib/$(ARCH)" -lSDL2 -lSDL2main -limgui.dll -mconsole -Wl,--dynamicbase -Wl,--nxcompat -Wl,--high-entropy-va -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion -luuid
+endif
+
 #`pkg-config --static --libs sdl2`
 #LIBS    := -Wl,--start-group -L./shared/lib/$(ARCH)/ -lSDL2main -lSDL2 -Wl,--end-group
 # -L$(ROOT)shared/lib/$(ARCH)/ -limgui
