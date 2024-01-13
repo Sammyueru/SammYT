@@ -18,6 +18,8 @@ STATE 	?=RELEASE
 ARCH 	?=x64
 # SOFTWARE, OS
 TYPE 	?=SOFTWARE
+# TRUE, FALSE
+TEST	?=FALSE
 
 #define PKG_CONFIG
 #export
@@ -57,6 +59,13 @@ endif
 #`pkg-config --cflags sdl2`
 # LDFLAGS  += -m elf_i386 -T linker.ld
 # LDFLAGS  += -m elf_x86_64 -T linker.ld
+
+#ifeq ($(TEST),TRUE)
+#	C_FLAGS   += -DTESTING
+#	CXX_FLAGS += -DTESTING
+#	AS_FLAGS  += -DTESTING
+#	LDFLAGS   += -DTESTING
+#endif
 
 OUT     := $(BUILD)$(PROJECT).exe
 ifeq ($(OSS),WIN)
@@ -153,7 +162,7 @@ $(CXX_OBJS): $(CXX_SOURCES)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 create_directories:
-	mkdir -p $(BUILD) $(foreach file,$(IMGUIOBJS),$(shell dirname $(file))) $(foreach file,$(ASM_OBJS),$(shell dirname $(file))) $(foreach file,$(C_OBJS),$(shell dirname $(file))) $(foreach file,$(CXX_OBJS),$(shell dirname $(file)))
+	mkdir -p $(BUILD) $(dir $(OUT)) $(foreach file,$(IMGUIOBJS),$(shell dirname $(file))) $(foreach file,$(ASM_OBJS),$(shell dirname $(file))) $(foreach file,$(C_OBJS),$(shell dirname $(file))) $(foreach file,$(CXX_OBJS),$(shell dirname $(file)))
 
 #"$(ROOT)shared/lib/$(ARCH)/libimgui.a": $(IMGUIOBJS)
 #	$(CXX) $(LDFLAGS) -shared -o $@ $^
